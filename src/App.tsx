@@ -33,6 +33,7 @@ import ReleaseNotesDialog from './components/modal/ReleaseNotesDialog';
 import LegacyModelsPrompt from './components/modal/LegacyModelsPrompt';
 import { PlaybackEntryViewPrompt } from './components/modal/playback-entry-view/PlaybackEntryViewPrompt';
 import { useStartupExperienceGate } from './hooks/useStartupExperienceGate';
+import { useKeepScreenOnWhilePlaying } from './hooks/useKeepScreenOnWhilePlaying';
 import { useAppDialogsModel } from './components/app/dialogs/useAppDialogsModel';
 import { useHomeModel } from './components/app/home/useHomeModel';
 import { createLyricFilterPatternSaver } from './components/app/home/createLyricFilterPatternSaver';
@@ -327,6 +328,8 @@ export default function App() {
     }, [automixEnabled, transitionMode]);
 
     const startupExperience = useStartupExperienceGate();
+    // 播放时按需向系统要屏幕唤醒锁（设置里可关，见「播放控制 → 播放行为」）。
+    useKeepScreenOnWhilePlaying();
 
     useEffect(() => initializeSyncCoordinator(), []);
 

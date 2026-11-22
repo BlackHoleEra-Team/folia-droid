@@ -3838,6 +3838,8 @@ export default {
     "autoSkipUnplayable": "无法播放时自动跳过",
     "autoSkipUnplayableDesc": "歌曲需要会员或购买、只能试听、所在地区不可播放，或原因不明无法播放时，像已下架的歌曲一样倒计时后跳到下一首。需要登录的歌曲和网络问题不会跳过。",
     "shuffleRoundNoRepeat": "一轮不重复",
+    "keepScreenOnDuringPlayback": "播放时保持屏幕常亮",
+    "keepScreenOnDuringPlaybackDesc": "应用在前台时生效；暂停播放或切到后台后自动放开。",
     "shuffleRoundNoRepeatDesc": "打乱队列和随机播放时，这一轮已经听过的歌排到后面，先放没听过的；开着列表循环时，整轮听完会自动重新打乱。只对打乱过的队列生效，关着时和原来一样。",
     "audioOutputDevice": "当前播放声卡",
     "audioOutputRefresh": "刷新",

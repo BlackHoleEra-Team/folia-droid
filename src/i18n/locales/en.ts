@@ -3838,6 +3838,8 @@ export default {
     "autoSkipUnplayable": "Skip songs that can't be played",
     "autoSkipUnplayableDesc": "When a song needs a membership or purchase, is preview-only, is blocked in your region or fails for an unknown reason, count down and skip to the next one, as with a taken-down song. Songs that need you to sign in, and network problems, are never skipped.",
     "shuffleRoundNoRepeat": "Shuffle in rounds",
+    "keepScreenOnDuringPlayback": "Keep the screen on while playing",
+    "keepScreenOnDuringPlaybackDesc": "Applies while the app is in the foreground; it is released when playback pauses or the app goes to the background.",
     "shuffleRoundNoRepeatDesc": "When you shuffle the queue or shuffle-play, songs you've already heard this round go after the ones you haven't. With list loop on, a finished round is shuffled again on its own. Only shuffled queues are tracked; off, shuffling works as before.",
     "audioOutputDevice": "Current Output Device",
     "audioOutputRefresh": "Refresh",

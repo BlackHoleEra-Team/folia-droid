@@ -39,6 +39,7 @@ const O = {
     queueBehavior: option(BEHAVIOR, 'queueDefaultBehavior', 'options.queueDefaultBehavior'),
     autoSkipUnplayable: option(BEHAVIOR, 'autoSkipUnplayable', 'options.autoSkipUnplayable'),
     shuffleRoundNoRepeat: option(BEHAVIOR, 'shuffleRoundNoRepeat', 'options.shuffleRoundNoRepeat'),
+    keepScreenOn: option(BEHAVIOR, 'keepScreenOnDuringPlayback', 'options.keepScreenOnDuringPlayback'),
     preventSleep: option(BEHAVIOR, 'preventDisplaySleepDuringPlayback', 'options.preventDisplaySleepDuringPlayback', { electronOnly: true }),
     voiceInputPause: option(BEHAVIOR, 'voiceInputPause', 'options.voiceInputPause', { electronOnly: true, available: () => runsOnWindows() }),
 };
@@ -79,12 +80,14 @@ const PlaybackPage: React.FC = () => {
         queueBehavior: state.queueAddBehavior,
         autoSkipUnplayable: state.autoSkipUnplayable,
         shuffleRoundNoRepeat: state.shuffleRoundNoRepeat,
+        keepScreenOn: state.keepScreenOn,
         setMediaCache: state.handleToggleMediaCache,
         setFade: state.handleTogglePlaybackFade,
         setTranscode: state.handleToggleTranscodeFallback,
         setQueueBehavior: state.handleSetQueueAddBehavior,
         setAutoSkipUnplayable: state.handleToggleAutoSkipUnplayable,
         setShuffleRoundNoRepeat: state.handleToggleShuffleRoundNoRepeat,
+        setKeepScreenOn: state.handleToggleKeepScreenOn,
     })));
     const preventSleep = useDesktopSettingsStore(state => state.preventDisplaySleepDuringPlayback);
     const setPreventSleep = useDesktopSettingsStore(state => state.handleTogglePreventDisplaySleepDuringPlayback);
@@ -237,6 +240,12 @@ const PlaybackPage: React.FC = () => {
                 {isElectron && (
                     <Row option={O.preventSleep} hint={t('options.preventDisplaySleepDuringPlaybackDesc')}>
                         <Toggle checked={preventSleep} onChange={setPreventSleep} />
+                    </Row>
+                )}
+                {/* 网页 / Android：桌面版那一行由 Electron 的 powerSaveBlocker 负责，这里用唤醒锁。 */}
+                {!isElectron && (
+                    <Row option={O.keepScreenOn} hint={t('options.keepScreenOnDuringPlaybackDesc')}>
+                        <Toggle checked={audio.keepScreenOn} onChange={audio.setKeepScreenOn} />
                     </Row>
                 )}
                 {voiceInputPause.supported && (

@@ -3838,6 +3838,8 @@ export default {
     "autoSkipUnplayable": "Tự động bỏ qua bài hát không thể phát",
     "autoSkipUnplayableDesc": "Khi một bài hát cần tài khoản hội viên/mua bản quyền, chỉ cho nghe thử, bị giới hạn khu vực hoặc gặp lỗi không rõ nguyên nhân, ứng dụng sẽ đếm ngược và chuyển sang bài tiếp theo như bài hát đã bị gỡ. Các bài hát yêu cầu đăng nhập và lỗi kết nối mạng sẽ không bị bỏ qua.",
     "shuffleRoundNoRepeat": "Trộn theo vòng",
+    "keepScreenOnDuringPlayback": "Giữ màn hình sáng khi phát nhạc",
+    "keepScreenOnDuringPlaybackDesc": "Chỉ áp dụng khi ứng dụng ở tiền cảnh; tự nhả khi tạm dừng phát hoặc chuyển ra nền.",
     "shuffleRoundNoRepeatDesc": "Khi trộn hàng đợi hoặc phát ngẫu nhiên, các bài đã nghe trong vòng này được xếp sau các bài chưa nghe. Khi bật lặp danh sách, vòng đã nghe hết sẽ tự trộn lại. Chỉ theo dõi hàng đợi đã trộn; khi tắt, trộn như trước.",
     "audioOutputDevice": "Thiết bị đầu ra hiện tại",
     "audioOutputRefresh": "Làm mới",

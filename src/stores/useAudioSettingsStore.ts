@@ -58,6 +58,12 @@ export const AUTO_SKIP_UNPLAYABLE_KEY = 'folia_auto_skip_unplayable';
 export const SHUFFLE_ROUND_NO_REPEAT_KEY = 'folia_shuffle_round_no_repeat';
 
 /**
+ * 播放时保持屏幕常亮。网页 / Android 构建用（桌面版由 Electron 的 powerSaveBlocker 管）。
+ * 应用退到后台时唤醒锁会被系统收走，回到前台再重新要。默认关。
+ */
+export const KEEP_SCREEN_ON_KEY = 'folia_keep_screen_on';
+
+/**
  * Folium 1.7: the equalizer curve a mod put in place over the listener's own sound (utils/audioEqualizerModCurve.ts),
  * removed when the listener's own sound plays again. audio_equalizer_settings never holds it.
  */
@@ -218,6 +224,8 @@ export type AudioSettingsState = {
     autoSkipUnplayable: boolean;
     /** Shuffle in rounds: songs heard this round go after the rest; a finished round reshuffles under list loop. Off by default. */
     shuffleRoundNoRepeat: boolean;
+    /** Keep the screen awake while a song plays; web/Android only. Off by default. */
+    keepScreenOn: boolean;
     audioOutputDeviceId: string;
     /** The listener's own sound, always: a mod's curve is never written into it. */
     audioEqualizerSettings: AudioEqualizerSettings;
@@ -244,6 +252,7 @@ export type AudioSettingsState = {
     handleTogglePlaybackFade: (enable: boolean) => void;
     handleToggleAutoSkipUnplayable: (enable: boolean) => void;
     handleToggleShuffleRoundNoRepeat: (enable: boolean) => void;
+    handleToggleKeepScreenOn: (enable: boolean) => void;
     handleSetAudioOutputDeviceId: (deviceId: string) => void;
     /*
      * The equalizer actions below return whether anything changed: the listener's settings they leave
@@ -334,6 +343,7 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     // Off unless asked for: skipping a song the listener picked is not something to do by default.
     autoSkipUnplayable: getStoredBoolean(AUTO_SKIP_UNPLAYABLE_KEY, false),
     shuffleRoundNoRepeat: getStoredBoolean(SHUFFLE_ROUND_NO_REPEAT_KEY, false),
+    keepScreenOn: getStoredBoolean(KEEP_SCREEN_ON_KEY, false),
     audioOutputDeviceId: readStoredAudioOutputDeviceId(),
     audioEqualizerSettings: initialAudioEqualizerSettings,
     audioEqualizerModCurve: readStoredAudioEqualizerModCurve(initialAudioEqualizerSettings),
@@ -397,6 +407,10 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     handleToggleShuffleRoundNoRepeat: (enable) => {
         setStoredBoolean(SHUFFLE_ROUND_NO_REPEAT_KEY, enable);
         set({ shuffleRoundNoRepeat: enable });
+    },
+    handleToggleKeepScreenOn: (enable) => {
+        setStoredBoolean(KEEP_SCREEN_ON_KEY, enable);
+        set({ keepScreenOn: enable });
     },
     handleSetAudioOutputDeviceId: (deviceId) => {
         set({ audioOutputDeviceId: deviceId });
@@ -528,6 +542,7 @@ export const selectAudioSettingsSnapshot = (state: AudioSettingsState) => ({
     playbackFadeEnabled: state.playbackFadeEnabled,
     autoSkipUnplayable: state.autoSkipUnplayable,
     shuffleRoundNoRepeat: state.shuffleRoundNoRepeat,
+    keepScreenOn: state.keepScreenOn,
     audioOutputDeviceId: state.audioOutputDeviceId,
     audioEqualizerSettings: state.audioEqualizerSettings,
     isAudioEqualizerOpen: state.isAudioEqualizerOpen,
@@ -544,6 +559,7 @@ export const selectAudioSettingsSnapshot = (state: AudioSettingsState) => ({
     handleTogglePlaybackFade: state.handleTogglePlaybackFade,
     handleToggleAutoSkipUnplayable: state.handleToggleAutoSkipUnplayable,
     handleToggleShuffleRoundNoRepeat: state.handleToggleShuffleRoundNoRepeat,
+    handleToggleKeepScreenOn: state.handleToggleKeepScreenOn,
     handleSetAudioOutputDeviceId: state.handleSetAudioOutputDeviceId,
     handleSetAudioEqualizerSettings: state.handleSetAudioEqualizerSettings,
     handleApplyAudioSoundPreset: state.handleApplyAudioSoundPreset,

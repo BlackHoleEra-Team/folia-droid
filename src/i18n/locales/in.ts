@@ -3838,6 +3838,8 @@ export default {
     "autoSkipUnplayable": "Lewati lagu yang tidak dapat diputar",
     "autoSkipUnplayableDesc": "Bila lagu memerlukan langganan atau pembelian, hanya tersedia pratinjau, diblokir di wilayah Anda, atau gagal diputar tanpa alasan yang jelas, hitung mundur lalu lewati ke lagu berikutnya, seperti lagu yang telah dihapus. Lagu yang memerlukan login dan masalah jaringan tidak pernah dilewati.",
     "shuffleRoundNoRepeat": "Acak per putaran",
+    "keepScreenOnDuringPlayback": "Jaga layar tetap menyala saat memutar",
+    "keepScreenOnDuringPlaybackDesc": "Berlaku saat aplikasi di depan; dilepas saat pemutaran dijeda atau aplikasi ke latar belakang.",
     "shuffleRoundNoRepeatDesc": "Saat mengacak antrean atau memutar acak, lagu yang sudah didengar di putaran ini ditaruh setelah lagu yang belum. Dengan putar ulang daftar, putaran yang selesai diacak lagi otomatis. Hanya antrean yang diacak yang dilacak; jika mati, pengacakan seperti biasa.",
     "audioOutputDevice": "Perangkat Output Saat Ini",
     "audioOutputRefresh": "Segarkan",
