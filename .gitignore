@@ -109,3 +109,17 @@ public/nebbia-strokes.json
 .coven/
 # ignore workbuddy
 .workbuddy/
+
+# Android WebView shell (android/): Gradle output and the per-machine SDK path.
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+# 110MB 的 Node 运行时和打包出来的后端资源都在构建时生成，不进仓库。
+android/app/libnode/
+android/app/src/main/assets/nodejs-project.zip
+android/app/.cxx/
+android/nodejs-project/node_modules/
+android/nodejs-project/www/
+android/nodejs-project/tmp/
+android/nodejs-project/folia-node.log

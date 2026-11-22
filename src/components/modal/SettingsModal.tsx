@@ -24,7 +24,6 @@ import { parseNumberText } from './settings/kit/numberText';
 import { SETTINGS_PAGES, SETTINGS_PAGE_OPTIONS } from './settings/pages';
 import HelpPage from './settings/pages/HelpPage';
 import { SettingsPageContext, type CacheCategory, type SettingsPageContextValue } from './settings/pages/settingsPageContext';
-import { AiHelpPromptModal } from './AiHelpPromptModal';
 import ReleaseNotesDialog from './ReleaseNotesDialog';
 import meowImageUrl from '../../../build/miao.png';
 import type { LyricData } from '../../types';
@@ -332,7 +331,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const [showSceneWindow, setShowSceneWindow] = useState(false);
     const [showLyricFilterSettings, setShowLyricFilterSettings] = useState(false);
     const [showGlobalLyricOffset, setShowGlobalLyricOffset] = useState(false);
-    const [showAiHelpPrompt, setShowAiHelpPrompt] = useState(false);
     const [showReleaseNotes, setShowReleaseNotes] = useState(false);
     const [, setAuthorClickCount] = useState(0);
     const [meowEasterEgg, setMeowEasterEgg] = useState<{ id: number; } | null>(null);
@@ -910,7 +908,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         || showSceneWindow
         || showLyricFilterSettings
         || showGlobalLyricOffset
-        || showAiHelpPrompt
         || showReleaseNotes;
 
     // Escape reaches this window only with none of its four dialogs open: they are sheets, and an
@@ -1232,6 +1229,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             title={isSearching
                                 ? t('options.settingsSearchTitle')
                                 : activeTab === 'help' ? t('help.title') : activeSettingsNavItem?.label ?? ''}
+                            tag={!isSearching && activeTab !== 'help' && activeSettingsSection === 'interaction'
+                                ? t('options.settingsKeyboardOnly')
+                                : undefined}
                             contents={settingsAnchors}
                             activeId={activeAnchorId}
                             onSelect={landOnGroup}
@@ -1253,7 +1253,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <div className="st-page-in">
                                         <HelpPage
                                             onOpenReleaseNotes={() => setShowReleaseNotes(true)}
-                                            onOpenAiHelp={() => setShowAiHelpPrompt(true)}
                                             onProjectLabelClick={handleAuthorLabelClick}
                                         />
                                     </div>
@@ -1461,11 +1460,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 lyrics={currentLyrics}
                 lyricCurrentTime={lyricCurrentTime}
                 onClose={() => closeSubviewOrModal(() => setShowGlobalLyricOffset(false))}
-            />
-            <AiHelpPromptModal
-                isOpen={showAiHelpPrompt}
-                isDaylight={isDaylight}
-                onClose={() => setShowAiHelpPrompt(false)}
             />
             <ReleaseNotesDialog
                 isOpen={showReleaseNotes}

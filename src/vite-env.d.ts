@@ -14,6 +14,10 @@ declare global {
   const __BUILD_KIND__: string;
   /** 自部署平台 docker / vercel / cloudflare；其他类别为空串。 */
   const __BUILD_HOST__: string;
+  /** 这份 fork 基于的上游仓库（owner/repo），没有基线时为空串。 */
+  const __BASE_REPO__: string;
+  /** 上游基线的那次提交，没有基线时为空串。 */
+  const __BASE_COMMIT__: string;
   const __APP_VERSION__: string;
   const __APP_VERSION_LABEL__: string;
   const __APP_RELEASE_CHANNEL__: string;

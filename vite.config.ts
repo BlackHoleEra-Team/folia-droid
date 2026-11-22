@@ -6,7 +6,7 @@ import { commandPinyinPlugin } from './dev/pinyin/commandPinyinPlugin.mjs';
 import { traditionalLocalePlugin } from './dev/i18n/traditionalLocalePlugin.mjs';
 import { icuFoliaDataPlugin } from './dev/icuFolia/icuFoliaDataPlugin.mjs';
 import { nebbiaStrokesPlugin } from './dev/nebbia/nebbiaStrokesPlugin.mjs';
-import { normalizeBuildCommit, resolveBuildKind, resolveBuildRepo, resolveDevBuildKindOverride } from './dev/build/buildIdentity.mjs';
+import { normalizeBuildCommit, resolveBuildKind, resolveBuildRepo, resolveDevBuildKindOverride, resolveUpstreamBase } from './dev/build/buildIdentity.mjs';
 import { VitePWA } from 'vite-plugin-pwa';
 import { execSync } from 'child_process';
 import { createHash } from 'crypto';
@@ -188,6 +188,7 @@ export default async function viteConfig(_config: ConfigEnv): Promise<UserConfig
   // 官方 / 自部署 / 非官方：设置里的版本号、扫码诊断报告和反馈入口都会读它
   // 开发服务器可以用 FOLIA_DEV_BUILD_KIND 钉住（Playwright 用）；vite build 不认这个变量。
   const buildKind = resolveDevBuildKindOverride(_config.command, process.env) ?? resolveBuildKind(process.env);
+  const upstreamBase = resolveUpstreamBase(process.env, () => fs.readFileSync(path.resolve(__dirname, 'build/upstream.json'), 'utf-8'));
 
   const appVersionLabel = process.env.APP_VERSION_LABEL?.trim() || 'Realeco';
   const appReleaseChannel = process.env.APP_RELEASE_CHANNEL?.trim().toLowerCase() || 'realeco';
@@ -268,7 +269,7 @@ export default async function viteConfig(_config: ConfigEnv): Promise<UserConfig
         // .claude holds the git worktrees of parallel sessions, each a full checkout of the repo:
         // watched, they cost one handle per file (hundreds of thousands on Windows), and setting
         // those up starves the dev server for minutes before it answers the first page.
-        ignored: ['**/release/**', '**/models/**', '**/.claude/**'],
+        ignored: ['**/release/**', '**/models/**', '**/.claude/**', '**/android/**/build/**', '**/android/.gradle/**'],
       },
     },
     plugins: [
@@ -329,6 +330,8 @@ export default async function viteConfig(_config: ConfigEnv): Promise<UserConfig
       '__BUILD_COMMIT__': JSON.stringify(buildCommit),
       '__BUILD_KIND__': JSON.stringify(buildKind.kind),
       '__BUILD_HOST__': JSON.stringify(buildKind.host ?? ''),
+      '__BASE_REPO__': JSON.stringify(upstreamBase?.repo ?? ''),
+      '__BASE_COMMIT__': JSON.stringify(upstreamBase?.commit ?? ''),
       '__APP_VERSION__': JSON.stringify(JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8')).version),
       '__APP_VERSION_LABEL__': JSON.stringify(appVersionLabel),
       '__APP_RELEASE_CHANNEL__': JSON.stringify(appReleaseChannel),

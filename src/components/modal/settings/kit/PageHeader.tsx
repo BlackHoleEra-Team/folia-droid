@@ -10,6 +10,8 @@ import { Tabs } from './Tabs';
 
 type PageHeaderProps = {
     title: string;
+    /** A small tag beside the title, such as "desktop only". */
+    tag?: React.ReactNode;
     /** The page's groups, in the order they are on the page. */
     contents: ReadonlyArray<{ id: string; label: string }>;
     /** The group in view. */
@@ -28,13 +30,18 @@ type PageHeaderProps = {
 
 const UNDER_ROW_PADDING = 'px-4 pt-1 md:px-8 md:pt-2';
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, contents, activeId, onSelect, summary, closeLabel, onClose, showClose = true }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, tag, contents, activeId, onSelect, summary, closeLabel, onClose, showClose = true }) => {
     const hasTabs = summary === undefined && contents.length > 1;
 
     return (
         <header className="shrink-0">
             <div className={`flex items-center justify-between gap-3 pl-4 pr-3 pt-4 md:pl-8 md:pr-4 md:pt-5${hasTabs || summary !== undefined ? '' : ' border-b border-[var(--st-line)] pb-3 md:pb-4'}`}>
-                <h2 className="min-w-0 truncate text-xl font-semibold leading-8 text-[color:var(--st-t1)]">{title}</h2>
+                <div className="flex min-w-0 items-center gap-2">
+                    <h2 className="min-w-0 truncate text-xl font-semibold leading-8 text-[color:var(--st-t1)]">{title}</h2>
+                    {tag && (
+                        <span className="shrink-0 rounded bg-[var(--st-fill)] px-1.5 text-[11px] leading-[18px] text-[color:var(--st-t2)]">{tag}</span>
+                    )}
+                </div>
                 {showClose && (
                     <button
                         type="button"

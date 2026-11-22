@@ -1,0 +1,114 @@
+name: Android pre-release
+
+# 构建 Android APK 并发 Pre-release。
+# 手动触发时填一个 tag；推 v*-android* 标签也会自动跑。
+# 构建跑在本仓库的 Actions 里，所以 GITHUB_ACTIONS / GITHUB_REPOSITORY 由 GitHub 注入，
+# 产物在应用里会显示为 official（见 dev/build/buildIdentity.mjs）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '发布标签，例如 v0.7.29-android.1'
+        required: true
+        default: v0.7.29-android.1
+  push:
+    tags:
+      - 'v*-android*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-pre-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装前端依赖
+        run: npm ci --no-audit --no-fund
+
+      - name: 构建前端
+        env:
+          VITE_NETEASE_API_BASE: http://127.0.0.1:32100/netease
+          VITE_KUGOU_API_BASE: http://127.0.0.1:32100/kugou
+          VITE_QQ_API_BASE: http://127.0.0.1:32100/qq
+          VITE_AI_PROVIDER: openai
+        run: npx vite build --outDir android/nodejs-project/www --emptyOutDir
+
+      - name: 安装后端依赖
+        working-directory: android/nodejs-project
+        run: npm ci --omit=dev --no-audit --no-fund
+
+      - name: 取 libnode（arm64-v8a + x86_64）
+        run: |
+          curl -L --retry 3 -o /tmp/libnode.zip \
+            https://github.com/AtFlun/nodejs-mobile/releases/download/v24.19.0/android-libnode.zip
+          unzip -q -o /tmp/libnode.zip -d android/app/
+
+      - name: 打包内置后端
+        run: |
+          cd android/nodejs-project
+          rm -rf tmp folia-node.log
+          mkdir -p ../app/src/main/assets
+          zip -qr ../app/src/main/assets/nodejs-project.zip .
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: 安装 SDK 组件
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" \
+            "ndk;27.1.12297006" "cmake;3.22.1"
+
+      - name: 构建 APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: 重命名
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk "folia-droid-${TAG}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: folia-droid-apk
+          path: folia-droid-*.apk
+          retention-days: 14
+
+      - name: 发布 Pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > /tmp/notes.md <<'EOF'
+          Android 客户端预发布版，由 GitHub Actions 构建。
+
+          - 内置 Node 后端，一个 APK 即可使用，不需要另跑服务器
+          - 网易云 / 酷狗 / QQ 音乐
+          - arm64-v8a（真机）与 x86_64（模拟器）
+          - 首次启动会解压内置组件，需要十几秒
+
+          这是预发布版本，功能和界面仍可能变动。
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "folia-droid-${TAG}.apk" --clobber
+          else
+            gh release create "$TAG" "folia-droid-${TAG}.apk" \
+              --title "Folia Android ${TAG#v}" \
+              --prerelease \
+              --notes-file /tmp/notes.md
+          fi

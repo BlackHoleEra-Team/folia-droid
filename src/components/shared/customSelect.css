@@ -1,0 +1,14 @@
+/* src/components/shared/customSelect.css
+   紧凑触发按钮的底色。
+
+   这里刻意不用 color-mix()：Android WebView 110（以及任何 Chrome < 111）不支持这个函数，
+   整条 background 声明会失效，按钮退回 UA 默认的浅灰底——深色主题里就是一块白。
+   两个变量由 CustomSelect 按明暗主题写进 style，悬停/展开态在这里切换。 */
+.cs-compact-trigger {
+    background-color: var(--cs-surface);
+}
+
+.cs-compact-trigger:enabled:hover,
+.cs-compact-trigger[data-open='true'] {
+    background-color: var(--cs-surface-hover);
+}

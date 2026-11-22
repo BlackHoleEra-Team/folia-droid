@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 品牌四色，和 public/icon.svg、index.html 的首屏遮罩同源。 -->
+    <color name="folia_red">#E3342A</color>
+    <color name="folia_yellow">#F7C918</color>
+    <color name="folia_blue">#1F5BC6</color>
+    <color name="folia_white">#FFFFFF</color>
+
+    <color name="app_background">#09090B</color>
+    <color name="splash_text">#D8D8E0</color>
+    <color name="splash_text_error">#FF8A80</color>
+    <color name="splash_track">#26262C</color>
+
+    <!-- 自适应图标的背景层：满幅纯黑，和 icon.svg 的黑底一致。 -->
+    <color name="ic_launcher_background">#000000</color>
+</resources>

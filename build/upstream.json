@@ -1,0 +1,5 @@
+{
+    "_comment": "这份 fork 基于的上游提交。每次合并上游后改这里，版本行会显示「Based on <repo>@<commit>」。",
+    "repo": "chthollyphile/folia-major",
+    "commit": "a772a97"
+}

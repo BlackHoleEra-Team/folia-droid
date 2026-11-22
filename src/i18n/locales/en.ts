@@ -2225,6 +2225,7 @@ export default {
     "joinCommunity": "Join the community",
     "communityDiscord": "Discord server",
     "communityDiscordHint": "Open the invite link",
+    "reportIssue": "Something wrong?",
     "joinDiscord": "Join the Discord community",
     "communityQq": "QQ self-help group",
     "communityQqHint": "{{number}} · click to copy",
@@ -2512,6 +2513,8 @@ export default {
     "settingsColorAreaValue": "Saturation {{saturation}}%, brightness {{brightness}}%",
     "settingsColorHue": "Hue",
     "settingsDesktopOnly": "Desktop app only",
+    "settingsKeyboardOnly": "Keyboard only",
+    "androidUnavailable": "Unavailable on Android",
     "settingsKeyCaptureListening": "Press a key…",
     "settingsKeyCaptureEmpty": "Not set",
     "settingsKeyCaptureClear": "Clear",
@@ -4329,7 +4332,7 @@ export default {
       }
     },
     "v0_7_29": {
-      "intro": "Welcome to 0.7.29, the Feynman Update—a major update. Personal FM gets its own radio wall, there is a new lyric style called Metaphor, and a performance check tells you how much visual quality this computer can handle.",
+      "intro": "Welcome to 0.7.29, the Feynman Update: Personal FM gets its own radio wall, a new lyric style called Metaphor, and a performance check that tells you how much visual quality this device can handle. This release also brings the Android app: the backend ships inside the APK, so one install is all it takes.",
       "radioWall": {
         "title": "Lattice radio wall",
         "description": "In Personal FM, Lattice becomes a ring of cards: upcoming songs are question-mark cards that flip over when their turn comes. Regular queues can use it too via Wall form in Settings."
@@ -4345,6 +4348,10 @@ export default {
       "shuffleSearch": {
         "title": "Shuffle and search history",
         "description": "Albums, playlists and an artist’s top songs get a shuffle button next to Play all, and Playback has a new Shuffle in rounds option. Search boxes and the command palette list your past searches."
+      },
+      "android": {
+        "title": "Android app",
+        "description": "One APK carries the web front end, a Node runtime and the music service, so search and playback work without deploying a server. The launch screen uses the F mark and a progress bar, the icon follows the adaptive-icon spec, and keyboard hints become buttons on touch screens."
       },
       "moreDetails": {
         "title": "More improvements",
@@ -5824,6 +5831,7 @@ export default {
       "required": "Try the page Ponder once to continue."
     },
     "allChaptersDone": "That is all of them.",
+    "prevChapter": "Previous chapter",
     "nextChapter": "Next chapter",
     "nextChapterAuto": "Up next",
     "title": "Ponder",

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Folia</string>
+    <string name="starting_up">正在启动…</string>
+    <string name="starting_local_service">正在启动本地服务…</string>
+    <string name="preparing_components">正在准备本地组件…</string>
+    <string name="starting_failed">本地服务启动失败</string>
+    <string name="starting_timeout">本地服务启动超时</string>
+</resources>

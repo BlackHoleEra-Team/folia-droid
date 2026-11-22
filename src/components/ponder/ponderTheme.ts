@@ -32,3 +32,9 @@ export const PONDER_ICON_BUTTON_CLASS = 'pd-t-quick grid h-8 w-8 shrink-0 place-
 
 /** The same with a text: exit. */
 export const PONDER_TEXT_BUTTON_CLASS = 'pd-t-quick inline-flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 text-[13px] text-[color:var(--st-t2)] transition-colors hover:bg-[var(--st-fill)] hover:text-[color:var(--st-t1)]';
+
+/**
+ * 触屏上没有键盘，键位图例没有意义。这些按钮替掉图例：静止就有底色（不用等悬停），
+ * 大小和圆角跟上面的控制条一致，按下去有反馈。
+ */
+export const PONDER_TOUCH_BUTTON_CLASS = 'pd-t-quick inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-[var(--st-line)] bg-[var(--st-fill)] px-2.5 text-[12px] text-[color:var(--st-t2)] transition-colors active:bg-[var(--st-fill2)] disabled:opacity-30';

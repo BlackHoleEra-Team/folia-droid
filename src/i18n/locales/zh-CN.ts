@@ -2225,6 +2225,7 @@ export default {
     "joinCommunity": "加入社区",
     "communityDiscord": "Discord 社区",
     "communityDiscordHint": "打开邀请链接",
+    "reportIssue": "遇到问题？",
     "joinDiscord": "加入 Discord 社区",
     "communityQq": "QQ 自助交流群",
     "communityQqHint": "{{number}} · 点击复制群号",
@@ -2512,6 +2513,8 @@ export default {
     "settingsColorAreaValue": "饱和度 {{saturation}}%，明度 {{brightness}}%",
     "settingsColorHue": "色相",
     "settingsDesktopOnly": "仅桌面版",
+    "settingsKeyboardOnly": "仅键盘",
+    "androidUnavailable": "Android 不可用",
     "settingsKeyCaptureListening": "按下一个键…",
     "settingsKeyCaptureEmpty": "未设置",
     "settingsKeyCaptureClear": "清除",
@@ -4329,7 +4332,7 @@ export default {
       }
     },
     "v0_7_29": {
-      "intro": "欢迎来到 0.7.29「Feynman Update」：这是一次重大更新。私人 FM 有了自己的电台墙，新增歌词样式「隐喻」，还能一键检测这台电脑跑得动多高的画质。",
+      "intro": "欢迎来到 0.7.29「Feynman Update」：私人 FM 有了自己的电台墙，新增歌词样式「隐喻」，还能一键测出当前设备跑得动多高的画质。这一版同时带来 Android 客户端：后端内置在应用里，一个 APK 就能用。",
       "radioWall": {
         "title": "Lattice 电台墙",
         "description": "私人 FM 下进 Lattice 是一圈卡牌的电台墙，接下来的歌是问号卡，轮到时翻开。普通队列也能在设置里把「墙面形态」换成电台墙。"
@@ -4345,6 +4348,10 @@ export default {
       "shuffleSearch": {
         "title": "随机播放与搜索历史",
         "description": "专辑、歌单和歌手热门的「播放全部」旁边多了随机播放；播放控制里可开「一轮不重复」。搜索框和命令面板会列出搜过的词。"
+      },
+      "android": {
+        "title": "Android 客户端",
+        "description": "一个 APK 里自带 Web 前端、Node 运行时和音源服务，装上就能搜索、播放，不用另外部署服务器。启动页换成 F 标记和进度条，图标按自适应规范重做；触屏上把键位提示换成了按钮。"
       },
       "moreDetails": {
         "title": "更多改进",
@@ -5823,6 +5830,7 @@ export default {
       "required": "完成一次页面思索后才能继续。"
     },
     "allChaptersDone": "全部章节都看完了。",
+    "prevChapter": "上一章",
     "nextChapter": "下一章",
     "nextChapterAuto": "即将进入下一章",
     "title": "思索",

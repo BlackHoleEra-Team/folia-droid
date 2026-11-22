@@ -7,7 +7,7 @@
 
 // 只有本仓库自己的 GitHub Actions 构建出来的才算官方版本。这里必须写死：
 // fork 的 Actions 里 GITHUB_REPOSITORY 是 fork 自己，本地构建根本没有 GITHUB_ACTIONS。
-export const OFFICIAL_BUILD_REPO = 'chthollyphile/folia-major';
+export const OFFICIAL_BUILD_REPO = 'BlackHoleEra-Team/folia-droid';
 
 const REPO_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/i;
@@ -49,6 +49,27 @@ export function resolveBuildRepo(env, readOriginUrl) {
 export function normalizeBuildCommit(commitHash) {
   const value = String(commitHash ?? '').trim();
   return COMMIT_PATTERN.test(value) ? value.toLowerCase() : 'dev';
+}
+
+// 这份 fork 基于的上游提交：FOLIA_BASE_REPO / FOLIA_BASE_COMMIT 优先，否则读 build/upstream.json。
+// 版本行用它写「Based on <repo>@<commit>」，和本仓库自己的 commit 并排显示。
+export function resolveUpstreamBase(env, readFile) {
+  const repo = String(env.FOLIA_BASE_REPO ?? '').trim();
+  const commit = String(env.FOLIA_BASE_COMMIT ?? '').trim();
+  if (REPO_PATTERN.test(repo) && COMMIT_PATTERN.test(commit)) {
+    return { repo, commit: commit.toLowerCase() };
+  }
+  try {
+    const parsed = JSON.parse(readFile());
+    const fileRepo = String(parsed?.repo ?? '').trim();
+    const fileCommit = String(parsed?.commit ?? '').trim();
+    if (REPO_PATTERN.test(fileRepo) && COMMIT_PATTERN.test(fileCommit)) {
+      return { repo: fileRepo, commit: fileCommit.toLowerCase() };
+    }
+  } catch {
+    // 没有这个文件就没有基线可写。
+  }
+  return null;
 }
 
 // 构建类别：

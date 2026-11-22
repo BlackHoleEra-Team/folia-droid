@@ -35,3 +35,12 @@ export const isSecondaryModifierPressed = (event: ModifierEvent): boolean => (
 
 /** Label for the primary modifier, for shortcut hints shown in the UI. */
 export const PRIMARY_MODIFIER_LABEL = isMacPlatform ? 'Cmd' : 'Ctrl';
+
+/**
+ * Whether this runs on Android (the shell app, or Chrome on Android). There is no hardware
+ * keyboard to hint at and no desktop window to make transparent, so those parts of the UI swap
+ * their keyboard hints for touch controls or say that the option does not apply here.
+ */
+export const isAndroidPlatform = (): boolean => (
+    typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
+);

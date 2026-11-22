@@ -2225,6 +2225,7 @@ export default {
     "joinCommunity": "Gabung komunitas",
     "communityDiscord": "Server Discord",
     "communityDiscordHint": "Buka tautan undangan",
+    "reportIssue": "Ada masalah?",
     "joinDiscord": "Gabung ke komunitas Discord",
     "communityQq": "Grup bantuan mandiri QQ",
     "communityQqHint": "{{number}} · klik untuk menyalin",
@@ -2512,6 +2513,8 @@ export default {
     "settingsColorAreaValue": "Saturasi {{saturation}}%, kecerahan {{brightness}}%",
     "settingsColorHue": "Rona",
     "settingsDesktopOnly": "Hanya aplikasi desktop",
+    "settingsKeyboardOnly": "Hanya keyboard",
+    "androidUnavailable": "Tidak tersedia di Android",
     "settingsKeyCaptureListening": "Tekan sebuah tombol…",
     "settingsKeyCaptureEmpty": "Belum diatur",
     "settingsKeyCaptureClear": "Hapus",
@@ -4329,7 +4332,7 @@ export default {
       }
     },
     "v0_7_29": {
-      "intro": "Selamat datang di 0.7.29, Feynman Update—sebuah pembaruan besar. FM Pribadi kini punya dinding radio sendiri, ada gaya lirik baru bernama Metaphor, dan pemeriksaan performa memberi tahu seberapa tinggi kualitas visual yang sanggup dijalankan komputer ini.",
+      "intro": "Selamat datang di 0.7.29, Feynman Update: FM Pribadi kini punya dinding radio sendiri, ada gaya lirik baru bernama Metaphor, dan pemeriksaan performa memberi tahu seberapa tinggi kualitas visual yang sanggup dijalankan perangkat ini. Rilis ini juga menghadirkan aplikasi Android: backend ikut di dalam APK, jadi cukup satu pemasangan.",
       "radioWall": {
         "title": "Dinding radio Lattice",
         "description": "Di FM Pribadi, Lattice menjadi lingkaran kartu: lagu berikutnya berupa kartu tanda tanya yang terbuka saat gilirannya tiba. Antrean biasa juga bisa memakainya lewat Bentuk dinding di Pengaturan."
@@ -4345,6 +4348,10 @@ export default {
       "shuffleSearch": {
         "title": "Acak dan riwayat pencarian",
         "description": "Album, playlist, dan lagu teratas artis punya tombol acak di samping Putar semua, dan Pemutaran punya opsi baru Acak per putaran. Kotak pencarian dan palet perintah menampilkan pencarian sebelumnya."
+      },
+      "android": {
+        "title": "Aplikasi Android",
+        "description": "Satu APK membawa antarmuka web, runtime Node, dan layanan musik, jadi pencarian dan pemutaran berjalan tanpa server tambahan. Layar pembuka memakai tanda F dan bilah progres, ikonnya mengikuti spesifikasi adaptive icon, dan petunjuk papan ketik berubah menjadi tombol di layar sentuh."
       },
       "moreDetails": {
         "title": "Peningkatan lainnya",
@@ -5823,6 +5830,7 @@ export default {
       "required": "Coba Ponder halaman sekali untuk melanjutkan."
     },
     "allChaptersDone": "Semuanya sudah selesai.",
+    "prevChapter": "Bab sebelumnya",
     "nextChapter": "Bab berikutnya",
     "nextChapterAuto": "Berikutnya",
     "title": "Ponder",

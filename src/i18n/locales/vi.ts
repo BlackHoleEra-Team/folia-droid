@@ -2225,6 +2225,7 @@ export default {
     "joinCommunity": "Tham gia cộng đồng",
     "communityDiscord": "Máy chủ Discord",
     "communityDiscordHint": "Mở liên kết mời",
+    "reportIssue": "Gặp sự cố?",
     "joinDiscord": "Tham gia cộng đồng Discord",
     "communityQq": "Nhóm hỗ trợ QQ",
     "communityQqHint": "{{number}} · nhấp để sao chép",
@@ -2512,6 +2513,8 @@ export default {
     "settingsColorAreaValue": "Độ bão hòa {{saturation}}%, độ sáng {{brightness}}%",
     "settingsColorHue": "Sắc độ",
     "settingsDesktopOnly": "Chỉ dành cho bản máy tính",
+    "settingsKeyboardOnly": "Chỉ bàn phím",
+    "androidUnavailable": "Không dùng được trên Android",
     "settingsKeyCaptureListening": "Nhấn một phím bất kỳ…",
     "settingsKeyCaptureEmpty": "Chưa thiết lập",
     "settingsKeyCaptureClear": "Xóa",
@@ -4329,7 +4332,7 @@ export default {
       }
     },
     "v0_7_29": {
-      "intro": "Chào mừng bạn đến với 0.7.29, Feynman Update—một bản cập nhật lớn. FM cá nhân có tường radio riêng, có kiểu lời bài hát mới tên Metaphor, và tính năng kiểm tra hiệu năng cho biết máy tính này chạy được chất lượng hình ảnh đến mức nào.",
+      "intro": "Chào mừng bạn đến với 0.7.29, Feynman Update: FM cá nhân có tường radio riêng, có kiểu lời bài hát mới tên Metaphor, và tính năng kiểm tra hiệu năng cho biết thiết bị này chạy được chất lượng hình ảnh đến mức nào. Bản này cũng mang đến ứng dụng Android: backend nằm trong APK, chỉ cần cài một lần.",
       "radioWall": {
         "title": "Tường radio Lattice",
         "description": "Trong FM cá nhân, Lattice trở thành một vòng thẻ: các bài sắp phát là thẻ dấu hỏi, lật lên khi đến lượt. Hàng đợi thường cũng dùng được qua mục Kiểu tường trong Cài đặt."
@@ -4345,6 +4348,10 @@ export default {
       "shuffleSearch": {
         "title": "Phát ngẫu nhiên và lịch sử tìm kiếm",
         "description": "Album, danh sách phát và bài nổi bật của nghệ sĩ có nút phát ngẫu nhiên cạnh Phát tất cả, và mục Phát lại có thêm tùy chọn Trộn theo vòng. Ô tìm kiếm và bảng lệnh liệt kê các từ bạn đã tìm."
+      },
+      "android": {
+        "title": "Ứng dụng Android",
+        "description": "Một APK mang theo giao diện web, runtime Node và dịch vụ nhạc, nên tìm kiếm và phát nhạc chạy mà không cần máy chủ riêng. Màn hình khởi động dùng dấu F và thanh tiến trình, biểu tượng theo chuẩn adaptive icon, và gợi ý bàn phím chuyển thành nút trên màn hình cảm ứng."
       },
       "moreDetails": {
         "title": "Cải tiến khác",
@@ -5824,6 +5831,7 @@ export default {
       "required": "Thử Khám phá trang một lần để tiếp tục."
     },
     "allChaptersDone": "Đã xem hết tất cả.",
+    "prevChapter": "Chương trước",
     "nextChapter": "Chương tiếp",
     "nextChapterAuto": "Tiếp theo",
     "title": "Khám phá",

@@ -1,4 +1,4 @@
-import { Atom, Gauge, Radio, Shuffle, Sparkles } from 'lucide-react';
+import { Atom, Gauge, Radio, Shuffle, Smartphone, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 // src/components/modal/newFeaturesRelease.ts
@@ -25,6 +25,7 @@ export const NEW_FEATURES_RELEASE: NewFeaturesRelease = {
         { id: 'metaphor', icon: Atom },
         { id: 'perfCheck', icon: Gauge },
         { id: 'shuffleSearch', icon: Shuffle },
+        { id: 'android', icon: Smartphone },
         { id: 'moreDetails', icon: Sparkles },
     ],
 };

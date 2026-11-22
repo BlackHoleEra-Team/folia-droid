@@ -4,6 +4,7 @@ import { usePlaybackReportReady } from '../../../../services/onlineMusic/playbac
 import { useAudioSettingsStore } from '../../../../stores/useAudioSettingsStore';
 import { usePlayerChromeSettingsStore } from '../../../../stores/usePlayerChromeSettingsStore';
 import { useStageSettingsStore } from '../../../../stores/useStageSettingsStore';
+import { isAndroidPlatform } from '../../../../utils/platform';
 import { Button, CopyValue, Group, Reveal, Row, Status, Toggle, Value, type SettingsOptionDef } from '../kit';
 import NavidromeRows from './integration/NavidromeRows';
 import { O, SERVICES, STREAMING } from './integration/options';
@@ -25,6 +26,7 @@ const OBS_GUIDE_STEPS = [1, 2, 3, 4, 5, 6];
 const IntegrationPage: React.FC = () => {
     const { t } = useTranslation();
     const { isElectron, viewProps, onToggleTransparentPlayerBackground } = useSettingsPage();
+    const isAndroid = isAndroidPlatform();
     const { discord, lyricApi, stage } = viewProps.integration;
     const obs = stage.obsBrowserSourceStatus;
     const lyricApiStatus = lyricApi.status;
@@ -68,7 +70,12 @@ const IntegrationPage: React.FC = () => {
             </Group>
 
             <Group def={STREAMING}>
-                <Row option={O.transparentBackground} hint={t('options.transparentPlayerBackgroundDesc')}>
+                <Row
+                    option={O.transparentBackground}
+                    hint={t('options.transparentPlayerBackgroundDesc')}
+                    desktopOnly
+                    desktopOnlyLabel={isAndroid ? t('options.androidUnavailable') : undefined}
+                >
                     <Toggle checked={transparentPlayerBackground} onChange={onToggleTransparentPlayerBackground} />
                 </Row>
                 {isElectron && obs && (

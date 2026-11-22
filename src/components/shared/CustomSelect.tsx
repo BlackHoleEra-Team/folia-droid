@@ -14,6 +14,7 @@ import {
     type CustomSelectOption,
 } from './CustomSelectMenu';
 import { useCustomSelectNavigation } from './useCustomSelectNavigation';
+import './customSelect.css';
 
 // CustomSelect.tsx
 // A custom dropdown select component designed to replace the browser's default select element.
@@ -233,10 +234,16 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     // 调用方接管底色与描边时不再写 borderColor：它的 style 可能用 border 简写，混用会被 React 警告。
     const callerOwnsSurface = triggerClassName !== undefined || triggerStyle !== undefined;
     const triggerClass = compact
-        ? `flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-lg pl-3 pr-2 text-[13px] ${reducedMotion ? '' : 'transition-colors '}focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 ${isOpen ? 'bg-[color-mix(in_srgb,var(--text-primary)_12%,transparent)]' : 'bg-[color-mix(in_srgb,var(--text-primary)_7%,transparent)] enabled:hover:bg-[color-mix(in_srgb,var(--text-primary)_12%,transparent)]'}`
+        ? `cs-compact-trigger flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-lg pl-3 pr-2 text-[13px] ${reducedMotion ? '' : 'transition-colors '}focus:outline-none disabled:cursor-not-allowed disabled:opacity-40`
         : `${TRIGGER_BASE_CLASS} ${reducedMotion ? '' : 'transition-all '}${TRIGGER_SIZE_CLASS[size]}${triggerClassName ? ` ${triggerClassName}` : ''}`;
     const triggerInlineStyle: React.CSSProperties = compact
-        ? { color: 'var(--text-primary)' }
+        ? ({
+            color: 'var(--text-primary)',
+            // 底色走 customSelect.css 的普通 rgba，不用 color-mix()：旧 WebView 不认那个函数，
+            // 声明整条失效会让按钮退回 UA 的浅色底。
+            '--cs-surface': isDaylight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.07)',
+            '--cs-surface-hover': isDaylight ? 'rgba(0, 0, 0, 0.10)' : 'rgba(255, 255, 255, 0.12)',
+        } as React.CSSProperties)
         : callerOwnsSurface
             ? { color: 'var(--text-primary)', ...triggerStyle, boxShadow: openRing ?? triggerStyle?.boxShadow }
             : {
@@ -265,6 +272,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 aria-activedescendant={isMenuShown && activeIndex >= 0 ? customSelectOptionId(listboxId, activeIndex) : undefined}
                 className={triggerClass}
                 style={triggerInlineStyle}
+                data-open={isOpen || undefined}
             >
                 <span id={triggerLabelledBy ? valueId : undefined} className="truncate">
                     {selectedOption ? selectedOption.label : (placeholder ?? t('ui.selectPlaceholder'))}

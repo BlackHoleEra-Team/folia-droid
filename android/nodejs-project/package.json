@@ -1,0 +1,13 @@
+{
+  "name": "folia-android-backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Folia Android 壳内置的本地后端：网易云 API + 前端静态文件",
+  "main": "main.js",
+  "dependencies": {
+    "@neteasecloudmusicapienhanced/api": "4.41.1",
+    "@yakult-green-tea/qq-music-api": "^3.3.6",
+    "express": "5.2.1",
+    "kugoumusicapi": "https://github.com/MakcRe/KuGouMusicApi/archive/refs/tags/v1.6.0.tar.gz"
+  }
+}

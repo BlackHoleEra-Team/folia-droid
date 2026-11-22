@@ -1,10 +1,11 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Lightbulb, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lightbulb, Pause, Play, RotateCcw, SkipBack, SkipForward, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { isAndroidPlatform } from '../../utils/platform';
 import type { PonderStageScreen } from '../../utils/ponder/ponderStageLayout';
 import { ponderTransition } from './ponderMotion';
-import { PONDER_ICON_BUTTON_CLASS, PONDER_TEXT_BUTTON_CLASS } from './ponderTheme';
+import { PONDER_ICON_BUTTON_CLASS, PONDER_TEXT_BUTTON_CLASS, PONDER_TOUCH_BUTTON_CLASS } from './ponderTheme';
 import PonderChapterTimeline from './PonderChapterTimeline';
 import { PONDER_QUIET_CAP, PonderKeyCombo } from './PonderKeyCap';
 import type { PonderStageNodes } from './ponderStageNodes';
@@ -75,6 +76,7 @@ const PonderChrome: React.FC<PonderChromeProps> = ({
     children,
 }) => {
     const { t } = useTranslation();
+    const isAndroid = isAndroidPlatform();
     const PlayIcon = isPaused ? Play : Pause;
 
     return (
@@ -87,7 +89,7 @@ const PonderChrome: React.FC<PonderChromeProps> = ({
                 </div>
                 {/* 触屏没有 Esc，所以它是一颗看得出能点的按钮，键帽只是顺带说明。 */}
                 <button type="button" data-testid="ponder-exit" onClick={onExit} className={PONDER_TEXT_BUTTON_CLASS}>
-                    <PonderKeyCombo combo="Esc" {...PONDER_QUIET_CAP} />
+                    {isAndroid ? <X size={14} aria-hidden="true" /> : <PonderKeyCombo combo="Esc" {...PONDER_QUIET_CAP} />}
                     {t('ponder.legend.exit')}
                 </button>
             </div>
@@ -159,18 +161,62 @@ const PonderChrome: React.FC<PonderChromeProps> = ({
                 {children}
             </div>
 
-            {/* 图例：键画成键帽，说明是说明。 */}
-            <div
-                data-ponder-legend
-                className="pointer-events-none absolute inset-x-0 bottom-[34px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-1.5 text-[11px] text-[color:var(--st-t3)]"
-            >
-                {LEGEND.map(entry => (
-                    <span key={entry.labelKey} className="inline-flex items-center gap-1.5">
-                        <PonderKeyCombo combo={entry.combo} {...PONDER_QUIET_CAP} />
-                        {t(entry.labelKey)}
-                    </span>
-                ))}
-            </div>
+            {/* 图例：桌面端画键帽；Android 上没有键盘，换成同样式的一排按钮。 */}
+            {isAndroid ? (
+                <div
+                    data-ponder-touch-controls
+                    className="absolute inset-x-0 bottom-[26px] flex flex-wrap items-center justify-center gap-2 px-4"
+                >
+                    <button
+                        type="button"
+                        onClick={onPrevKeyframe}
+                        disabled={ticks.length === 0}
+                        className={PONDER_TOUCH_BUTTON_CLASS}
+                    >
+                        <SkipBack size={14} aria-hidden="true" />
+                        {t('ponder.prevKeyframe')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onNextKeyframe}
+                        disabled={ticks.length === 0}
+                        className={PONDER_TOUCH_BUTTON_CLASS}
+                    >
+                        {t('ponder.nextKeyframe')}
+                        <SkipForward size={14} aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onSelectChapter(Math.max(0, sceneIndex - 1))}
+                        disabled={sceneIndex <= 0}
+                        className={PONDER_TOUCH_BUTTON_CLASS}
+                    >
+                        <ChevronLeft size={14} aria-hidden="true" />
+                        {t('ponder.prevChapter')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onSelectChapter(Math.min(chapters.length - 1, sceneIndex + 1))}
+                        disabled={sceneIndex >= chapters.length - 1}
+                        className={PONDER_TOUCH_BUTTON_CLASS}
+                    >
+                        {t('ponder.nextChapter')}
+                        <ChevronRight size={14} aria-hidden="true" />
+                    </button>
+                </div>
+            ) : (
+                <div
+                    data-ponder-legend
+                    className="pointer-events-none absolute inset-x-0 bottom-[34px] flex flex-wrap items-center justify-center gap-x-[22px] gap-y-1.5 text-[11px] text-[color:var(--st-t3)]"
+                >
+                    {LEGEND.map(entry => (
+                        <span key={entry.labelKey} className="inline-flex items-center gap-1.5">
+                            <PonderKeyCombo combo={entry.combo} {...PONDER_QUIET_CAP} />
+                            {t(entry.labelKey)}
+                        </span>
+                    ))}
+                </div>
+            )}
         </>
     );
 };
