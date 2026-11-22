@@ -69,12 +69,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
-
+      # ubuntu-latest 自带 Android SDK 与 cmdline-tools；setup-android@v3 会去找已下架的
+      # "tools" 包而失败，所以只补这次构建要用的组件。
       - name: 安装 SDK 组件
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install "platforms;android-36" "build-tools;36.0.0" \
+          SDKMANAGER=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" \
             "ndk;27.1.12297006" "cmake;3.22.1"
 
       - name: 构建 APK
