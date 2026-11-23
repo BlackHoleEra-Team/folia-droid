@@ -81,14 +81,25 @@ public final class LocalAudioServer {
         try (ServerSocket server = new ServerSocket(PORT, 8, java.net.InetAddress.getByName("127.0.0.1"))) {
             server.setSoTimeout(0);
             while (started) {
-                try (Socket socket = server.accept()) {
-                    socket.setSoTimeout(30000);
-                    handle(context, socket);
-                } catch (SocketTimeoutException ignored) {
-                    // 读超时：这一条连接断了，继续等下一条。
-                } catch (IOException ignored) {
-                    // 单条连接失败不影响服务。
+                final Socket socket;
+                try {
+                    socket = server.accept();
+                } catch (IOException error) {
+                    continue;
                 }
+                // 一条长音频流会占住连接几十秒；同一个线程里处理会把封面和拖动进度条的请求堵在后面。
+                Thread worker = new Thread(() -> {
+                    try (Socket client = socket) {
+                        client.setSoTimeout(30000);
+                        handle(context, client);
+                    } catch (SocketTimeoutException ignored) {
+                        // 读超时：这一条连接断了。
+                    } catch (IOException ignored) {
+                        // 单条连接失败不影响服务。
+                    }
+                }, "folia-local-audio-conn");
+                worker.setDaemon(true);
+                worker.start();
             }
         } catch (IOException ignored) {
             started = false;
@@ -181,7 +192,8 @@ public final class LocalAudioServer {
                 return;
             }
 
-            String contentType = "audio/mpeg";
+            String contentType = context.getContentResolver().getType(uri);
+            if (contentType == null) contentType = "audio/mpeg";
             String status = isRange ? "HTTP/1.1 206 Partial Content" : "HTTP/1.1 200 OK";
             StringBuilder head = new StringBuilder()
                     .append(status).append("\r\n")
@@ -234,7 +246,8 @@ public final class LocalAudioServer {
                 return;
             }
             byte[] bytes = readAll(in);
-            respond(out, "200 OK", "image/jpeg", bytes, null);
+            String type = context.getContentResolver().getType(artUri);
+            respond(out, "200 OK", type == null ? "image/jpeg" : type, bytes, null);
         } catch (Exception error) {
             respond(out, "404 Not Found", "text/plain", new byte[0], null);
         }

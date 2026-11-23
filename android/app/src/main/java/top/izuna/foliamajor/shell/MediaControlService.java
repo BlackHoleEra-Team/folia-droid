@@ -63,6 +63,7 @@ public class MediaControlService extends Service {
     public void onCreate() {
         super.onCreate();
         instance = new WeakReference<>(this);
+        running = true;
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
@@ -106,6 +107,7 @@ public class MediaControlService extends Service {
             session = null;
         }
         instance = EMPTY;
+        running = false;
         super.onDestroy();
     }
 
@@ -121,9 +123,13 @@ public class MediaControlService extends Service {
     }
 
     /** 页面推来的最新状态。先确保服务在前台，再把画面更新交给实例。 */
+    private static volatile boolean running = false;
+
     static void updateState(Context context, JSONObject json) {
         try {
-            context.startForegroundService(new Intent(context, MediaControlService.class));
+            if (!running) {
+                context.startForegroundService(new Intent(context, MediaControlService.class));
+            }
         } catch (IllegalStateException error) {
             // 应用正在后台被系统限制时起不来服务：本次状态只更新会话，不出通知。
         }
@@ -223,6 +229,14 @@ public class MediaControlService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
+    private static byte[] readAll(InputStream in) throws java.io.IOException {
+        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int got;
+        while ((got = in.read(chunk)) > 0) buffer.write(chunk, 0, got);
+        return buffer.toByteArray();
+    }
+
     private void loadCover(String url) {
         if (url == null || url.isEmpty() || url.equals(coverInFlight)) return;
         coverInFlight = url == null ? "" : url;
@@ -233,8 +247,15 @@ public class MediaControlService extends Service {
                 connection.setConnectTimeout(6000);
                 connection.setReadTimeout(6000);
                 InputStream in = connection.getInputStream();
-                bitmap = BitmapFactory.decodeStream(in);
+                byte[] raw = readAll(in);
                 in.close();
+                BitmapFactory.Options bounds = new BitmapFactory.Options();
+                bounds.inJustDecodeBounds = true;
+                BitmapFactory.decodeByteArray(raw, 0, raw.length, bounds);
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                int longest = Math.max(bounds.outWidth, bounds.outHeight);
+                options.inSampleSize = longest > 1024 ? Integer.highestOneBit(longest / 1024) : 1;
+                bitmap = BitmapFactory.decodeByteArray(raw, 0, raw.length, options);
             } catch (Exception ignored) {
                 // 封面拿不到就沿用上一张；通知不因此重画。
             }
