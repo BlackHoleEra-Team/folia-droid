@@ -10,6 +10,7 @@ import { useVisualizerSettingsStore } from '../../../../stores/useVisualizerSett
 import { Button, Group, Reveal, Row, Segmented, Toggle, Value, option, type SettingsGroupDef, type SettingsOptionDef } from '../kit';
 import { settingsAnchorSubview } from '../../../../utils/settingsAnchorModel';
 import { useSettingsPage } from './settingsPageContext';
+import { useAppDisplayStore, type AppDisplayMode } from '../../../../stores/useAppDisplayStore';
 
 // src/components/modal/settings/pages/AppearancePage.tsx
 // The 外观 page: which lyric animation the player uses, which scene (its window holds each scene's
@@ -22,8 +23,10 @@ import { useSettingsPage } from './settingsPageContext';
 const LYRICS: SettingsGroupDef = { id: 'lyricsRenderer', titleKey: 'options.lyricsRenderer' };
 const THEME: SettingsGroupDef = { id: 'themePresets', titleKey: 'options.settingsHeadingTheme' };
 const SONG_THEME: SettingsGroupDef = { id: 'songTheme', titleKey: 'options.settingsHeadingSongTheme' };
+const APP_DISPLAY: SettingsGroupDef = { id: 'appDisplay', titleKey: 'options.settingsHeadingAppDisplay' };
 
 const O = {
+    displayMode: option(APP_DISPLAY, 'appDisplayMode', 'options.appDisplayMode'),
     lyricsAnimation: option(LYRICS, 'lyricsAnimationAdjust', 'options.lyricsAnimationAdjust'),
     scene: option(LYRICS, 'scene', 'ui.scene'),
     // Not a row of its own: it lives in the scene window, so a search for it lands on the group with the scene row.
@@ -45,6 +48,8 @@ type DaylightChoice = 'light' | 'dark' | 'system';
 const AppearancePage: React.FC = () => {
     const { t } = useTranslation();
     const { themeControls, onOpenVisPlayground, onOpenThemePark, onOpenSceneWindow } = useSettingsPage();
+    const displayMode = useAppDisplayStore(state => state.mode);
+    const setDisplayMode = useAppDisplayStore(state => state.setMode);
     const { isDaylight, followSystemTheme, setDaylightPreference, setFollowSystemTheme } = useThemeSettingsStore(useShallow(state => ({
         isDaylight: state.isDaylight,
         followSystemTheme: state.followSystemTheme,
@@ -57,6 +62,24 @@ const AppearancePage: React.FC = () => {
 
     return (
         <>
+            {/* 只在 Android 壳里出现：桌面的窗口朝向由用户拖，页面管不着。 */}
+            {typeof window !== 'undefined'
+                && Boolean((window as Window & { foliaNative?: unknown }).foliaNative) && (
+                <Group def={APP_DISPLAY} bare>
+                    <Row option={O.displayMode} hint={t('options.appDisplayModeDesc')}>
+                        <Segmented<AppDisplayMode>
+                            value={displayMode}
+                            options={[
+                                { value: 'landscape', label: t('options.appDisplayModeLandscape') },
+                                { value: 'portrait', label: t('options.appDisplayModePortrait') },
+                                { value: 'system', label: t('options.appDisplayModeSystem') },
+                            ]}
+                            onChange={setDisplayMode}
+                        />
+                    </Row>
+                </Group>
+            )}
+
             <Group def={LYRICS} bare>
                 {nativeBlurEnabled && <Row notice={t('options.nativeBlurBackgroundNotice')} />}
                 <Row option={O.lyricsAnimation} hint={t('options.lyricsRendererDesc')} onClick={onOpenVisPlayground}>

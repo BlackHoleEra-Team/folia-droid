@@ -34,6 +34,7 @@ import LegacyModelsPrompt from './components/modal/LegacyModelsPrompt';
 import { PlaybackEntryViewPrompt } from './components/modal/playback-entry-view/PlaybackEntryViewPrompt';
 import { useStartupExperienceGate } from './hooks/useStartupExperienceGate';
 import { useKeepScreenOnWhilePlaying } from './hooks/useKeepScreenOnWhilePlaying';
+import { useAppDisplayOrientation } from './stores/useAppDisplayStore';
 import { useAppDialogsModel } from './components/app/dialogs/useAppDialogsModel';
 import { useHomeModel } from './components/app/home/useHomeModel';
 import { createLyricFilterPatternSaver } from './components/app/home/createLyricFilterPatternSaver';
@@ -117,6 +118,7 @@ import { useLocalLibraryAutoScan } from './hooks/useLocalLibraryAutoScan';
 import { useElectronVideoExportController } from './hooks/useElectronVideoExportController';
 import { useElectronWindowPlaybackHandoff } from './components/app/playback/restore/useElectronWindowPlaybackHandoff';
 import { useMediaSessionBridge } from './hooks/useMediaSessionBridge';
+import { useNativeMediaBridge } from './hooks/useNativeMediaBridge';
 import { usePlayerChromeAutoHide } from './hooks/usePlayerChromeAutoHide';
 import { useMacWallpaperHitRegions } from './hooks/useMacWallpaperHitRegions';
 import { useIdleCursorHide } from './hooks/useIdleCursorHide';
@@ -330,6 +332,8 @@ export default function App() {
     const startupExperience = useStartupExperienceGate();
     // 播放时按需向系统要屏幕唤醒锁（设置里可关，见「播放控制 → 播放行为」）。
     useKeepScreenOnWhilePlaying();
+    // 应用显示模式（横屏/竖屏/跟随系统旋转）变化时通知壳；不在壳里时无事发生。
+    useAppDisplayOrientation();
 
     useEffect(() => initializeSyncCoordinator(), []);
 
@@ -1453,6 +1457,8 @@ export default function App() {
     useMediaSessionBridge(mediaSessionOptions);
     // Linux: on the HiFi route the system media controls come from main's MPRIS, fed the same.
     useHifiMpris(mediaSessionOptions);
+    // Android 壳：通知栏/锁屏的媒体卡（MediaControlService）吃同一份状态与处理器。
+    useNativeMediaBridge(mediaSessionOptions);
     useHifiMediaSessionKeepAlive();
     useHifiWebRouteNotice();
 

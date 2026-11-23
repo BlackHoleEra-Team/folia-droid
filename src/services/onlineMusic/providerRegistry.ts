@@ -11,6 +11,7 @@ import { spotifyProvider } from './spotify/spotifyProvider';
 import { qishuiProvider } from './qishui/qishuiProvider';
 import { appleMusicProvider } from './appleMusic/appleMusicProvider';
 import { fnmusicProvider } from './fnmusic/fnmusicProvider';
+import { nativeLocalProvider } from './nativeLocal/nativeLocalProvider';
 
 // src/services/onlineMusic/providerRegistry.ts
 
@@ -125,3 +126,9 @@ registerOnlineMusicProvider(qishuiProvider);
 
 registerOnlineMusicProvider(appleMusicProvider);
 registerOnlineMusicProvider(fnmusicProvider);
+
+// Android 壳的本机音乐：window.foliaNative 由壳注入，桌面与浏览器里不注册。
+if (typeof window !== 'undefined'
+    && typeof (window as Window & { foliaNative?: { platform?: () => string } }).foliaNative?.platform === 'function') {
+    registerOnlineMusicProvider(nativeLocalProvider);
+}

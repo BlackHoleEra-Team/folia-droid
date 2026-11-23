@@ -3,7 +3,10 @@ package top.izuna.foliamajor.shell;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Insets;
 import android.net.Uri;
@@ -11,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+import java.lang.ref.WeakReference;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
@@ -67,10 +71,16 @@ public class MainActivity extends Activity {
     private boolean splashHidden;
     private boolean legacyCachesCleared;
 
+    private static final String DISPLAY_MODE_PREF = "folia_shell";
+    private static final String DISPLAY_MODE_KEY = "display_mode";
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activityRef = new WeakReference<>(this);
+        // 显示模式存壳的偏好里；「跟随系统旋转」启动时仍先横屏，页面加载后自己切全传感器。
+        applyOrientation("system".equals(storedDisplayMode(this)) ? "landscape" : storedDisplayMode(this), this);
         WebView.setWebContentsDebuggingEnabled(true);
 
         webView = new WebView(this);
@@ -94,6 +104,11 @@ public class MainActivity extends Activity {
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
         cookies.setAcceptThirdPartyCookies(webView, true);
+
+        // 页面 ↔ 原生的通道：媒体通知、本机音乐流都从这里进出。
+        webView.addJavascriptInterface(new FoliaNativeBridge(this), "foliaNative");
+        LocalAudioServer.ensureStarted(this);
+        requestNotificationPermissionIfNeeded();
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -295,6 +310,73 @@ public class MainActivity extends Activity {
         String host = uri.getHost();
         return "127.0.0.1".equals(host) || "localhost".equals(host);
     }
+
+    /** Android 13 及以上要运行时申请通知与音频库权限；没有它们媒体卡只在锁屏活着、本机音乐扫不出来。 */
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            String[] wanted = {
+                    android.Manifest.permission.POST_NOTIFICATIONS,
+                    android.Manifest.permission.READ_MEDIA_AUDIO,
+            };
+            java.util.List<String> missing = new java.util.ArrayList<>();
+            for (String permission : wanted) {
+                if (checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    missing.add(permission);
+                }
+            }
+            if (!missing.isEmpty()) {
+                requestPermissions(missing.toArray(new String[0]), 9001);
+            }
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 29
+                && checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 9001);
+        }
+    }
+
+    /** 任何线程都能调：把一段 JS 丢进页面（主线程执行）。 */
+    static void evaluateJs(String script) {
+        MainActivity activity = activityRef == null ? null : activityRef.get();
+        if (activity == null || activity.webView == null) return;
+        activity.runOnUiThread(() -> activity.webView.evaluateJavascript(script, null));
+    }
+
+    /** 页面（foliaNative.setOrientation）或启动时调：应用显示模式，横屏为默认。 */
+    static void applyDisplayMode(String mode) {
+        MainActivity activity = activityRef == null ? null : activityRef.get();
+        String safeMode = mode == null ? "landscape" : mode;
+        Context context = activity != null ? activity : null;
+        if (context != null) {
+            SharedPreferences prefs = context.getSharedPreferences(DISPLAY_MODE_PREF, Context.MODE_PRIVATE);
+            prefs.edit().putString(DISPLAY_MODE_KEY, safeMode).apply();
+        }
+        applyOrientation(safeMode, activity);
+    }
+
+    private static void applyOrientation(String mode, Activity activity) {
+        if (activity == null) return;
+        int orientation;
+        switch (mode) {
+            case "portrait":
+                orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                break;
+            case "system":
+                orientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+                break;
+            default:
+                orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+        }
+        activity.runOnUiThread(() -> activity.setRequestedOrientation(orientation));
+    }
+
+    private static String storedDisplayMode(Context context) {
+        return context.getSharedPreferences(DISPLAY_MODE_PREF, Context.MODE_PRIVATE)
+                .getString(DISPLAY_MODE_KEY, "landscape");
+    }
+
+    private static WeakReference<MainActivity> activityRef = new WeakReference<>(null);
 
     private void openExternally(Uri uri) {
         try {

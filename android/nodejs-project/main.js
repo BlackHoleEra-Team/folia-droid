@@ -18,13 +18,16 @@ const QQ_PORT = 32103;
 // 应用进程的 stdout 在 Android 上没人接，而且 WebView 也在这个进程里，
 // 不能把 fd 1/2 重定向走。所有输出自己写文件，Java 侧失败时读它的末尾。
 const LOG_FILE = path.join(__dirname, 'folia-node.log');
-const logStream = fs.createWriteStream(LOG_FILE, { flags: 'w' });
-
+// 同步写：进程退出（尤其崩溃）时，异步流的尾巴会被丢掉，错误就看不见了。
 function writeLog(level, args) {
     const text = args
         .map((arg) => (typeof arg === 'string' ? arg : util.inspect(arg, { depth: 4, breakLength: 160 })))
         .join(' ');
-    logStream.write(`${new Date().toISOString()} ${level} ${text}\n`);
+    try {
+        fs.appendFileSync(LOG_FILE, `${new Date().toISOString()} ${level} ${text}\n`);
+    } catch {
+        // 磁盘满之类：日志写不进去就写不进去。
+    }
 }
 
 for (const level of ['log', 'info', 'warn', 'error', 'debug']) {
@@ -34,10 +37,13 @@ for (const level of ['log', 'info', 'warn', 'error', 'debug']) {
 process.on('uncaughtException', (error) => console.error('[backend] uncaught exception', error));
 process.on('unhandledRejection', (error) => console.error('[backend] unhandled rejection', error));
 
-// 网易云 API 会在 os.tmpdir() 下写 anonymous_token。Android 上没有可写的 /tmp，
-// 必须在 require 之前把 TMPDIR 指到应用自己的目录。
-process.env.TMPDIR = process.env.FOLIA_TMPDIR || path.join(__dirname, 'tmp');
-fs.mkdirSync(process.env.TMPDIR, { recursive: true });
+// 网易云 API 会在 os.tmpdir() 下写 anonymous_token。nodejs-mobile 的 os.tmpdir() 是原生写死的
+// （模拟器上返回不可写的 /tmp，env 改了也不生效），所以直接把函数换成应用自己的目录。
+const osModule = require('os');
+const appTmpDir = path.join(__dirname, 'tmp');
+fs.mkdirSync(appTmpDir, { recursive: true });
+osModule.tmpdir = () => appTmpDir;
+process.env.TMPDIR = appTmpDir;
 
 const log = (...args) => console.log('[backend]', ...args);
 

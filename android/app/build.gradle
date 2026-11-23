@@ -10,7 +10,7 @@ android {
     ndkVersion '27.1.12297006'
 
     defaultConfig {
-        applicationId 'top.izuna.foliamajor.shell'
+        applicationId 'team.bhe.foliadroid'
         minSdk 26
         targetSdk 35
         versionCode 7029
@@ -60,4 +60,9 @@ android {
             minifyEnabled false
         }
     }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.media:media:1.7.0'
 }
