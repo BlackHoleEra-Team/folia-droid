@@ -7,6 +7,7 @@ import { normalizeLyricMatchText } from '../utils/lyrics/matchScore';
 import { createSafeObjectUrl } from '../utils/blobGuards';
 import { repairFlacMetadata } from '../utils/flacMetadataRepair';
 import { resolveExplicitFileTimedLyricFormat, type ExplicitFileTimedLyricFormat } from '../utils/lyrics/formatDetection';
+import { normalizeEmbeddedLrcText } from '../utils/lyrics/embeddedLrcNormalization';
 import { applyMatchedMetadata } from './localLibraryCatalogService';
 import { buildLyricSearchQuery } from '../utils/lyrics/searchQuery';
 import { buildLocalSongLyricMatchContext, shouldRefreshLocalSongLyricsFromMetadata } from '../utils/lyrics/localSongMatchContext';
@@ -857,6 +858,18 @@ async function buildImportedSong(
             console.warn(`[LocalMusic] Failed to parse metadata for ${file.name}:`, e);
         }
         parseMetadataMs = performance.now() - parseMetadataStartedAt;
+    }
+
+    // 文件里自己带的歌词（ID3 USLT / Vorbis LYRICS 等）。旁挂 .lrc 优先，没有就用它——
+    // 之前这里只认旁挂文件，内嵌歌词解析出来了却被丢掉。
+    if (!localLyricsContent && embeddedMetadata.lyrics) {
+        const embeddedLyrics = normalizeEmbeddedLrcText(embeddedMetadata.lyrics);
+        if (embeddedLyrics.mainText) {
+            localLyricsContent = embeddedLyrics.mainText;
+            if (!localTranslationLyricsContent && embeddedLyrics.translationText) {
+                localTranslationLyricsContent = embeddedLyrics.translationText;
+            }
+        }
     }
 
     let durationFallbackMs = 0;
