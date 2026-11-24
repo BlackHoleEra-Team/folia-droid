@@ -51,6 +51,36 @@ public class FoliaNativeBridge {
         return LocalAudioServer.ensureStarted(context);
     }
 
+    /** 打开系统目录选择器；结果以 folia-folder-picked 事件回到页面（空串表示取消）。 */
+    @JavascriptInterface
+    public void pickMusicFolder() {
+        MainActivity.pickMusicFolder();
+    }
+
+    /** 上次选中的目录（SAF 树 URI），没有就是空串。 */
+    @JavascriptInterface
+    public String savedMusicFolder() {
+        return FolderAccess.savedTree(context);
+    }
+
+    /** 目录内容：[{path,name,uri,mime,size,lyric}]。 */
+    @JavascriptInterface
+    public String listMusicFolder(String treeUri) {
+        return FolderAccess.listTree(context.getContentResolver(), android.net.Uri.parse(treeUri));
+    }
+
+    /** 某个文档的音频流地址（本地 127.0.0.1）。 */
+    @JavascriptInterface
+    public String documentAudioUrl(String documentUri) {
+        return LocalAudioServer.ensureStarted(context) + "/doc?uri=" + android.net.Uri.encode(documentUri);
+    }
+
+    /** 内嵌歌词（ID3 USLT），没有就是空串。 */
+    @JavascriptInterface
+    public String embeddedLyrics(String documentUri) {
+        return FolderAccess.readLyrics(context.getContentResolver(), android.net.Uri.parse(documentUri));
+    }
+
     /** 应用显示模式：landscape / portrait / system；壳存下来，下次启动也按它来。 */
     @JavascriptInterface
     public void setOrientation(String mode) {

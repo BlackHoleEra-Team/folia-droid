@@ -375,6 +375,20 @@ public class MainActivity extends Activity {
         activity.runOnUiThread(() -> activity.webView.evaluateJavascript(script, null));
     }
 
+    /** 页面（foliaNative.pickMusicFolder）调：系统目录选择器，选完用事件回给页面。 */
+    static void pickMusicFolder() {
+        MainActivity activity = activityRef == null ? null : activityRef.get();
+        FolderAccess.pick(activity, uri -> evaluateJs(
+                "window.dispatchEvent(new CustomEvent('folia-folder-picked',{detail:"
+                        + org.json.JSONObject.quote(uri) + "}));"));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        FolderAccess.handleResult(this, requestCode, resultCode, data);
+    }
+
     /** 页面（foliaNative.setOrientation）或启动时调：应用显示模式，横屏为默认。 */
     static void applyDisplayMode(String mode) {
         MainActivity activity = activityRef == null ? null : activityRef.get();
@@ -462,6 +476,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
+            // 先摘下来再销毁：挂在窗口上直接 destroy 会让 WebView 报 "destroy() while attached"。
+            if (webView.getParent() instanceof android.view.ViewGroup) {
+                ((android.view.ViewGroup) webView.getParent()).removeView(webView);
+            }
             webView.destroy();
             webView = null;
         }

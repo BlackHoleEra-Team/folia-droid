@@ -1,6 +1,7 @@
 package top.izuna.foliamajor.shell;
 
 import android.content.ContentResolver;
+import android.os.Build;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -53,6 +54,7 @@ public final class LocalAudioServer {
     /** MediaStore 里的音频清单：id、标题、歌手、专辑、时长（秒）、专辑 id。 */
     public static String scanJson(ContentResolver resolver) {
         JSONArray list = new JSONArray();
+        boolean hasRelativePath = Build.VERSION.SDK_INT >= 29;
         String[] projection = {
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
@@ -62,6 +64,10 @@ public final class LocalAudioServer {
                 MediaStore.Audio.Media.ALBUM_ID,
                 MediaStore.Audio.Media.MIME_TYPE,
         };
+        if (hasRelativePath) {
+            projection = java.util.Arrays.copyOf(projection, projection.length + 1);
+            projection[projection.length - 1] = MediaStore.Audio.Media.RELATIVE_PATH;
+        }
         try (Cursor cursor = resolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, null, null,
                 MediaStore.Audio.Media.DATE_ADDED + " DESC")) {
@@ -75,6 +81,7 @@ public final class LocalAudioServer {
                     row.put("durationSec", Math.round(cursor.getLong(4) / 1000.0));
                     row.put("albumId", cursor.getLong(5));
                     row.put("mime", cursor.getString(6));
+                    row.put("relPath", hasRelativePath ? cursor.getString(7) : "");
                     list.put(row);
                 }
             }
@@ -133,6 +140,15 @@ public final class LocalAudioServer {
             respond(socket.getOutputStream(), "204 No Content", "text/plain", new byte[0], null);
             return;
         }
+        if (path.startsWith("/doc")) {
+            String encoded = queryParam(path, "uri");
+            if (encoded == null) {
+                respond(socket.getOutputStream(), "400 Bad Request", "text/plain", new byte[0], null);
+                return;
+            }
+            streamDocument(context, socket.getOutputStream(), Uri.parse(encoded), range);
+            return;
+        }
         if (path.startsWith("/local/")) {
             long id = parseId(path.substring("/local/".length()));
             streamMediaStoreAudio(context, socket.getOutputStream(), id, range);
@@ -144,6 +160,77 @@ public final class LocalAudioServer {
             return;
         }
         respond(socket.getOutputStream(), "404 Not Found", "text/plain", new byte[0], null);
+    }
+
+    private static String queryParam(String path, String key) {
+        int question = path.indexOf('?');
+        if (question < 0) return null;
+        String query = path.substring(question + 1);
+        for (String pair : query.split("&")) {
+            int equals = pair.indexOf('=');
+            if (equals <= 0) continue;
+            if (!pair.substring(0, equals).equals(key)) continue;
+            return java.net.URLDecoder.decode(pair.substring(equals + 1), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return null;
+    }
+
+    /** SAF 文档的音频流：长度可知就支持 Range，不知道就整段送。 */
+    private static void streamDocument(Context context, OutputStream out, Uri document, String range) throws IOException {
+        try {
+            android.content.res.AssetFileDescriptor afd = context.getContentResolver().openAssetFileDescriptor(document, "r");
+            long total = afd != null ? afd.getLength() : -1;
+            String contentType = context.getContentResolver().getType(document);
+            if (contentType == null) contentType = "audio/mpeg";
+            InputStream in = context.getContentResolver().openInputStream(document);
+            if (in == null) {
+                respond(out, "404 Not Found", "text/plain", new byte[0], null);
+                return;
+            }
+            long start = 0;
+            long end = total > 0 ? total - 1 : -1;
+            boolean isRange = range != null && range.startsWith("bytes=") && total > 0;
+            if (isRange) {
+                String spec = range.substring("bytes=".length());
+                int dash = spec.indexOf('-');
+                start = dash <= 0 ? 0 : Long.parseLong(spec.substring(0, dash));
+                end = dash == spec.length() - 1 ? total - 1 : Long.parseLong(spec.substring(dash + 1));
+            }
+            StringBuilder head = new StringBuilder()
+                    .append(isRange ? "HTTP/1.1 206 Partial Content" : "HTTP/1.1 200 OK").append("\r\n")
+                    .append("Content-Type: ").append(contentType).append("\r\n")
+                    .append("Accept-Ranges: bytes\r\n");
+            if (total > 0) head.append("Content-Length: ").append(end - start + 1).append("\r\n");
+            if (isRange) {
+                head.append("Content-Range: bytes ").append(start).append('-').append(end)
+                        .append('/').append(total).append("\r\n");
+            }
+            head.append(CORS).append("Connection: close\r\n\r\n");
+            out.write(head.toString().getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+
+            long skipped = in.skip(start);
+            while (skipped < start) {
+                long more = in.skip(start - skipped);
+                if (more <= 0) break;
+                skipped += more;
+            }
+            byte[] chunk = new byte[16384];
+            long remaining = end >= 0 ? end - start + 1 : Long.MAX_VALUE;
+            while (remaining > 0) {
+                int want = (int) Math.min(chunk.length, remaining);
+                int got = in.read(chunk, 0, want);
+                if (got <= 0) break;
+                out.write(chunk, 0, got);
+                remaining -= got;
+            }
+            out.flush();
+            in.close();
+            if (afd != null) afd.close();
+        } catch (SecurityException error) {
+            respond(out, "403 Forbidden", "text/plain", new byte[0], null);
+        } catch (Exception error) {
+            // 客户端断开：连接作废即可。
+        }
     }
 
     private static String header(String[] lines, String prefix) {
