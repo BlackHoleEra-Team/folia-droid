@@ -292,7 +292,8 @@ export const installNativeDirectoryPicker = (): void => {
     // 本地库的封面/歌词存储要 OPFS；WebView 没有的话先用 IndexedDB 顶上，
     // 否则可用性判定会判本地库不可用，导入按钮点了没反应。
     installNativeOpfsShim();
-    if ('showDirectoryPicker' in window) return;
+    // 不能因为 WebView 里已经有 showDirectoryPicker 就跳过：那是个空壳，
+    // 调用只会抛错，按钮于是"点了没反应"。壳里一律换成我们的实现。
 
     Object.defineProperty(window, 'showDirectoryPicker', {
         configurable: true,
