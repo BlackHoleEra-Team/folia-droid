@@ -21,6 +21,8 @@ type NativeAudioApi = {
     localAudioBaseUrl: () => string;
 };
 
+import { installNativeOpfsShim } from './nativeOpfsShim';
+
 const FOLDER_NAME = '本机音乐';
 
 const extensionFor = (mime: string | undefined, name: string): string => {
@@ -110,6 +112,9 @@ export const installNativeDirectoryPicker = (): void => {
     if (typeof window === 'undefined') return;
     const api = (window as Window & { foliaNative?: Partial<NativeAudioApi> }).foliaNative;
     if (!api?.scanLocalAudio || !api.localAudioBaseUrl) return;
+    // 本地库的封面/歌词存储要 OPFS；WebView 没有的话先用 IndexedDB 顶上，
+    // 否则可用性判定会判本地库不可用，导入按钮点了没反应。
+    installNativeOpfsShim();
     if ('showDirectoryPicker' in window) return;
 
     Object.defineProperty(window, 'showDirectoryPicker', {
