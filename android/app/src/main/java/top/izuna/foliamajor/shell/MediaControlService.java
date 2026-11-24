@@ -58,6 +58,12 @@ public class MediaControlService extends Service {
     private String coverUrl = "";
     private Bitmap coverBitmap;
     private String coverInFlight = "";
+    private String title = "";
+    private String artist = "";
+    private String album = "";
+    // 通知只在「该变」的时候重建：进度每秒都在走，但歌名、封面、播放状态没变就不该重画，
+    // 否则部分 ROM 上大图标会跟着每秒闪一下。
+    private String lastNotificationSignature = "";
 
     @Override
     public void onCreate() {
@@ -153,14 +159,13 @@ public class MediaControlService extends Service {
 
     private void applyState(JSONObject json) {
         main.post(() -> {
-            boolean nowPlaying = json.optBoolean("playing", playing);
-            playing = nowPlaying;
+            playing = json.optBoolean("playing", playing);
             durationMs = Math.round(json.optDouble("durationSec", durationMs / 1000.0) * 1000);
             positionMs = Math.round(json.optDouble("positionSec", positionMs / 1000.0) * 1000);
-            String title = json.optString("title", getString(R.string.app_name));
-            String artist = json.optString("artist", "");
-            String album = json.optString("album", "");
-            String nextCover = json.optString("coverUrl", coverUrl);
+            title = json.optString("title", getString(R.string.app_name));
+            artist = json.optString("artist", "");
+            album = json.optString("album", "");
+            coverUrl = json.optString("coverUrl", coverUrl);
 
             MediaMetadataCompat.Builder meta = new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
@@ -178,22 +183,31 @@ public class MediaControlService extends Service {
                             | PlaybackStateCompat.ACTION_PLAY_PAUSE
                             | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                             | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)
-                    .setState(nowPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED,
-                            positionMs, nowPlaying ? 1f : 0f)
+                    .setState(playing ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED,
+                            positionMs, playing ? 1f : 0f)
                     .build());
 
-            Notification notification = buildNotification(title, artist, album, nowPlaying);
-            if (Build.VERSION.SDK_INT >= 29) {
-                startForeground(NOTIFICATION_ID, notification,
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-            } else {
-                startForeground(NOTIFICATION_ID, notification);
+            String signature = playing + "|" + title + "|" + artist + "|" + album + "|" + coverUrl
+                    + "|" + (coverBitmap == null ? 0 : System.identityHashCode(coverBitmap));
+            if (!signature.equals(lastNotificationSignature)) {
+                lastNotificationSignature = signature;
+                postNotification();
             }
 
-            if (!coverInFlight.equals(nextCover)) {
-                loadCover(nextCover);
+            if (!coverInFlight.equals(coverUrl)) {
+                loadCover(coverUrl);
             }
         });
+    }
+
+    private void postNotification() {
+        Notification notification = buildNotification(title, artist, album, playing);
+        if (Build.VERSION.SDK_INT >= 29) {
+            startForeground(NOTIFICATION_ID, notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
     }
 
     private Notification buildNotification(String title, String artist, String album, boolean nowPlaying) {
@@ -261,7 +275,11 @@ public class MediaControlService extends Service {
             }
             Bitmap fetched = bitmap;
             main.post(() -> {
-                if (fetched != null) coverBitmap = fetched;
+                if (fetched != null) {
+                    coverBitmap = fetched;
+                    // 新封面到了：签名带着位图身份，重画一次就好，不会每秒重画。
+                    if (session != null) postNotification();
+                }
             });
         });
     }

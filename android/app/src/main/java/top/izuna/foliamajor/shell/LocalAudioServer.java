@@ -27,6 +27,11 @@ import java.net.SocketTimeoutException;
 
 public final class LocalAudioServer {
     public static final int PORT = 32104;
+    // 页面用 Web Audio 分析频谱，音频请求带 CORS 语义；没有这几个头，Chrome 会直接拦掉整段音频。
+    private static final String CORS = "Access-Control-Allow-Origin: *\r\n"
+            + "Access-Control-Allow-Methods: GET, OPTIONS\r\n"
+            + "Access-Control-Allow-Headers: Range\r\n"
+            + "Access-Control-Expose-Headers: Content-Range, Accept-Ranges, Content-Length\r\n";
 
     private static volatile boolean started = false;
     private static String baseUrl = "";
@@ -122,6 +127,10 @@ public final class LocalAudioServer {
         String path = parts[1];
         String range = header(lines, "Range:");
 
+        if ("OPTIONS".equalsIgnoreCase(parts[0])) {
+            respond(socket.getOutputStream(), "204 No Content", "text/plain", new byte[0], null);
+            return;
+        }
         if (path.startsWith("/local/")) {
             long id = parseId(path.substring("/local/".length()));
             streamMediaStoreAudio(context, socket.getOutputStream(), id, range);
@@ -200,6 +209,7 @@ public final class LocalAudioServer {
                     .append("Content-Type: ").append(contentType).append("\r\n")
                     .append("Accept-Ranges: bytes\r\n")
                     .append("Content-Length: ").append(end - start + 1).append("\r\n")
+                    .append(CORS)
                     .append("Connection: close\r\n");
             if (isRange) {
                 head.append("Content-Range: bytes ").append(start).append('-').append(end)
@@ -268,6 +278,7 @@ public final class LocalAudioServer {
                 .append("HTTP/1.1 ").append(status).append("\r\n")
                 .append("Content-Type: ").append(contentType).append("\r\n")
                 .append("Content-Length: ").append(body.length).append("\r\n")
+                .append(CORS)
                 .append("Connection: close\r\n");
         if (extra != null) head.append(extra);
         head.append("\r\n");

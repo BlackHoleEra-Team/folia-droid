@@ -79,8 +79,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         activityRef = new WeakReference<>(this);
-        // 显示模式存壳的偏好里；「跟随系统旋转」启动时仍先横屏，页面加载后自己切全传感器。
-        applyOrientation("system".equals(storedDisplayMode(this)) ? "landscape" : storedDisplayMode(this), this);
+        // 显示模式存壳的偏好里：跟随系统旋转先横屏、播放页横屏先竖屏，页面加载后自己再校正。
+        String storedMode = storedDisplayMode(this);
+        applyOrientation("system".equals(storedMode) ? "landscape"
+                : ("player".equals(storedMode) ? "portrait" : storedMode), this);
         WebView.setWebContentsDebuggingEnabled(true);
 
         webView = new WebView(this);

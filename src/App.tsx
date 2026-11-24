@@ -34,7 +34,7 @@ import LegacyModelsPrompt from './components/modal/LegacyModelsPrompt';
 import { PlaybackEntryViewPrompt } from './components/modal/playback-entry-view/PlaybackEntryViewPrompt';
 import { useStartupExperienceGate } from './hooks/useStartupExperienceGate';
 import { useKeepScreenOnWhilePlaying } from './hooks/useKeepScreenOnWhilePlaying';
-import { useAppDisplayOrientation } from './stores/useAppDisplayStore';
+import { useAppDisplayOrientation, useAppDisplayStore } from './stores/useAppDisplayStore';
 import { useAppDialogsModel } from './components/app/dialogs/useAppDialogsModel';
 import { useHomeModel } from './components/app/home/useHomeModel';
 import { createLyricFilterPatternSaver } from './components/app/home/createLyricFilterPatternSaver';
@@ -332,7 +332,7 @@ export default function App() {
     const startupExperience = useStartupExperienceGate();
     // 播放时按需向系统要屏幕唤醒锁（设置里可关，见「播放控制 → 播放行为」）。
     useKeepScreenOnWhilePlaying();
-    // 应用显示模式（横屏/竖屏/跟随系统旋转）变化时通知壳；不在壳里时无事发生。
+    // 应用显示模式（横屏 / 竖屏 / 跟随系统 / 主页面竖屏·播放页横屏）与页面缩放落到壳上。
     useAppDisplayOrientation();
 
     useEffect(() => initializeSyncCoordinator(), []);
@@ -1662,6 +1662,10 @@ export default function App() {
         playbackRoute,
         stageActiveEntryKind,
     ]);
+    // 播放页状态写进显示设置：主页面竖屏 / 播放页横屏靠它决定锁哪边。
+    useEffect(() => {
+        useAppDisplayStore.getState().setInPlayer(isPlayerView);
+    }, [isPlayerView]);
     // 播放页空闲时连指针一起隐藏。复用控制栏的自动隐藏时钟（3 秒无鼠标移动），不新开计时器：
     // 只有「自动隐藏」模式下才成立，`always-hidden` 是常驻隐藏、没有唤回时机，不参与。
     // 点击穿透（桌面宠物）也排除：那种状态下控制栏被钉成隐藏、鼠标移动不再唤回，跟着它走会把

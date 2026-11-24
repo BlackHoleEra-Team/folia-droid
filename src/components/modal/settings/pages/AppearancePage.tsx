@@ -7,7 +7,7 @@ import { usePlayerChromeSettingsStore } from '../../../../stores/usePlayerChrome
 import { openSettings } from '../../../../stores/useSettingsModalStore';
 import { useThemeSettingsStore } from '../../../../stores/useThemeSettingsStore';
 import { useVisualizerSettingsStore } from '../../../../stores/useVisualizerSettingsStore';
-import { Button, Group, Reveal, Row, Segmented, Toggle, Value, option, type SettingsGroupDef, type SettingsOptionDef } from '../kit';
+import { Button, Chips, Group, Reveal, Row, Segmented, Slider, Toggle, Value, option, type SettingsGroupDef, type SettingsOptionDef } from '../kit';
 import { settingsAnchorSubview } from '../../../../utils/settingsAnchorModel';
 import { useSettingsPage } from './settingsPageContext';
 import { useAppDisplayStore, type AppDisplayMode } from '../../../../stores/useAppDisplayStore';
@@ -27,6 +27,7 @@ const APP_DISPLAY: SettingsGroupDef = { id: 'appDisplay', titleKey: 'options.set
 
 const O = {
     displayMode: option(APP_DISPLAY, 'appDisplayMode', 'options.appDisplayMode'),
+    displayZoom: option(APP_DISPLAY, 'appDisplayZoom', 'options.appDisplayZoom'),
     lyricsAnimation: option(LYRICS, 'lyricsAnimationAdjust', 'options.lyricsAnimationAdjust'),
     scene: option(LYRICS, 'scene', 'ui.scene'),
     // Not a row of its own: it lives in the scene window, so a search for it lands on the group with the scene row.
@@ -50,6 +51,8 @@ const AppearancePage: React.FC = () => {
     const { themeControls, onOpenVisPlayground, onOpenThemePark, onOpenSceneWindow } = useSettingsPage();
     const displayMode = useAppDisplayStore(state => state.mode);
     const setDisplayMode = useAppDisplayStore(state => state.setMode);
+    const displayZoom = useAppDisplayStore(state => state.zoom);
+    const setDisplayZoom = useAppDisplayStore(state => state.setZoom);
     const { isDaylight, followSystemTheme, setDaylightPreference, setFollowSystemTheme } = useThemeSettingsStore(useShallow(state => ({
         isDaylight: state.isDaylight,
         followSystemTheme: state.followSystemTheme,
@@ -67,14 +70,29 @@ const AppearancePage: React.FC = () => {
                 && Boolean((window as Window & { foliaNative?: unknown }).foliaNative) && (
                 <Group def={APP_DISPLAY} bare>
                     <Row option={O.displayMode} hint={t('options.appDisplayModeDesc')}>
-                        <Segmented<AppDisplayMode>
-                            value={displayMode}
-                            options={[
-                                { value: 'landscape', label: t('options.appDisplayModeLandscape') },
-                                { value: 'portrait', label: t('options.appDisplayModePortrait') },
-                                { value: 'system', label: t('options.appDisplayModeSystem') },
-                            ]}
-                            onChange={setDisplayMode}
+                        <Chips
+                            items={([
+                                ['landscape', 'options.appDisplayModeLandscape'],
+                                ['portrait', 'options.appDisplayModePortrait'],
+                                ['system', 'options.appDisplayModeSystem'],
+                                ['player', 'options.appDisplayModePlayer'],
+                            ] as const).map(([value, key]) => ({
+                                id: value,
+                                label: t(key),
+                                checked: displayMode === value,
+                                onChange: () => setDisplayMode(value),
+                            }))}
+                        />
+                    </Row>
+                    <Row option={O.displayZoom} hint={t('options.appDisplayZoomDesc')}>
+                        <Slider
+                            value={displayZoom}
+                            min={80}
+                            max={150}
+                            step={5}
+                            onChange={setDisplayZoom}
+                            format={value => `${value}%`}
+                            marks={[{ value: 100 }]}
                         />
                     </Row>
                 </Group>
