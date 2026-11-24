@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 import { installGlobalVisualizerFrameRateLimiter } from './utils/frameRateLimiter';
+import { installNativeDirectoryPicker } from './services/localMusic/nativeDirectoryPicker';
 import { installConsoleLogCapture } from './utils/consoleLogBuffer';
 import { installDebugModule } from './services/debug/debugModule';
 import { installMemorySampleFeed } from './services/debug/memorySamples';
@@ -26,6 +27,9 @@ if (!isPerfCheckSurface) {
 // observer or the rows it retains.
 // if (import.meta.env.DEV) installCoverSizeAudit();
 installGlobalVisualizerFrameRateLimiter();
+// Android 壳里没有 File System Access API：把 showDirectoryPicker 接到 MediaStore 上，
+// 本地库的「导入文件夹」才能用。其它环境里它什么都不做。
+installNativeDirectoryPicker();
 
 void import('./bootstrap');
 // window.__foliaDev and the ?skipStartup / ?mockSong launch flags (src/dev/devLaunchFlags.ts).

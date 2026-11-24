@@ -250,6 +250,7 @@ public class MainActivity extends Activity {
                     String url = override != null && !override.isEmpty() ? override : LOCAL_URL;
                     Log.i(TAG, "[page] loading " + url);
                     webView.loadUrl(url);
+                    scheduleLoadRetries(url);
                 });
             } catch (Throwable error) {
                 Log.e(TAG, "[boot] failed", error);
@@ -268,6 +269,35 @@ public class MainActivity extends Activity {
         statusView.setText(message);
         progressBar.setVisibility(View.INVISIBLE);
     }
+
+    /**
+     * 偶尔（尤其刚 force-stop 过）WebView 的第一次加载会卡住：请求没发出，页面不 commit，
+     * 开屏就一直停在那儿。这里兜两次重载——真卡住时 8 秒后自己好，正常情况什么都不做。
+     */
+    private void scheduleLoadRetries(String url) {
+        final long[] delays = { 8000L, 16000L };
+        for (long delay : delays) {
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                if (splashHidden || webView == null) return;
+                Log.w(TAG, "[page] no first frame after " + delay + "ms, retrying");
+                if (delay < 16000L) {
+                    webView.loadUrl(url);
+                    return;
+                }
+                // 重载也不行：多半是这一份 WebView 的渲染进程没起来（force-stop 之后常见）。
+                // 重建 Activity 会连 WebView 一起换掉；只重建两次，避免死循环。
+                if (recreateAttempts < 2) {
+                    recreateAttempts += 1;
+                    Log.w(TAG, "[page] rebuilding activity, attempt " + recreateAttempts);
+                    recreate();
+                } else {
+                    showBootError(getString(R.string.starting_failed));
+                }
+            }, delay);
+        }
+    }
+
+    private static int recreateAttempts = 0;
 
     private void revealWebView() {
         if (splashHidden || splashView == null) return;

@@ -60,6 +60,7 @@ public final class LocalAudioServer {
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.MIME_TYPE,
         };
         try (Cursor cursor = resolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, null, null,
@@ -73,6 +74,7 @@ public final class LocalAudioServer {
                     row.put("album", cursor.getString(3));
                     row.put("durationSec", Math.round(cursor.getLong(4) / 1000.0));
                     row.put("albumId", cursor.getLong(5));
+                    row.put("mime", cursor.getString(6));
                     list.put(row);
                 }
             }
